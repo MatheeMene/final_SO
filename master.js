@@ -65,12 +65,13 @@ const rl = readline.createInterface({
 });
 
 function sendWorkToNode(num) {
-	console.log(nodesAvailable);
-	axios.post('http://192.168.1.4' + '/assign-fib-sequence', {
+	axios.post('http://192.168.1.4:3001' + '/assign-fib-sequence', {
 		number: num
 	})
 		.then(function (response) {
-			console.log(response);
+			if (response.data.success) {
+				console.log('Reult from node #1: ' + response.data.result);
+			}
 		})
 		.catch(function (error) {
 			console.log(error);
@@ -79,16 +80,17 @@ function sendWorkToNode(num) {
 
 function promptMenu() {
 	rl.question("Choose operation: \n1 - Set Fibonacci sequence to calculate\n2 - Get cluster status\n", (option) => {
-		console.log(option);
 		if (option == '1') {
-			rl.question("Set sequence number: \n", (number) => sendWorkToNode(number));
+			rl.question("Set sequence number: \n", (number) => {
+				sendWorkToNode(number);
+				promptMenu();
+			});
 		} else if (option == '2') {
 			rl.question("Set sequence number: \n", (numbers) => {
 
 			});
 
 		}
-		promptMenu();
 	});
 }
 

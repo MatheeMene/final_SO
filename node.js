@@ -7,19 +7,14 @@ const nets = networkInterfaces();
 const ips = [];
 //const masterAddress = 'http://172.18.0.22:3000';
 const masterAddress = 'http://127.0.0.1:3000';
-
+const { fork,spawn } = require('await-spawn');
 const axios = require('axios');
+var sys = require('sys')
+var exec = require('child_process').exec;
 app.use(function(req, res, next) {
-
-	//to allow cross domain requests to send cookie information.
 	res.header('Access-Control-Allow-Credentials', true);
-
-	// origin can not be '*' when crendentials are enabled. so need to set it to the request origin
 	res.header('Access-Control-Allow-Origin',  req.headers.origin);
-
-	// list of methods that are supported by the server
 	res.header('Access-Control-Allow-Methods','OPTIONS,GET,PUT,POST,DELETE');
-
 	res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, X-XSRF-TOKEN');
 
 	next();
@@ -39,11 +34,13 @@ app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`);
 });
 
-app.get('/status', (req, res) => {
-	res.send({
-		status: true,
-		ip: ips[0],
-		load: 0
+app.get('/status', async (req, res) => {
+	const child= exec("./get_cpu_usage.sh", function(err, stdout, stderr) {
+		res.send({
+			status: true,
+			ip: ips[0],
+			load: stdout
+		});
 	});
 });
 
@@ -53,14 +50,15 @@ function fib(n) {
 	return fib(n - 1) + fib(n - 2);
 }
 
-app.post('/assign-fib-sequence', (req, res) => {
+app.post('/assign-fib-sequence', async (req, res) => {
 	const { body: { number }} = req;
-	console.log('chegou o numero' + number);
 	if (number) {
-		return fib(number);
+		return new Promise((resolve,reject) => {
+			resolve(res.send({success: true, result: fib(number)}));
+		});
 	}
 
-	return 'Not valid';
+	return res.send({success: false});
 });
 
 
@@ -68,7 +66,7 @@ axios.post(masterAddress + '/assign-node', {
 	ip: ips[0]
   })
   .then(function (response) {
-    console.log(response);
+    console.log(response.data);
   })
   .catch(function (error) {
     console.log(error);
