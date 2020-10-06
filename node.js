@@ -1,4 +1,6 @@
 const { networkInterfaces } = require('os');
+const { Worker } = require('worker_threads')
+const bodyParser = require('body-parser');
 const express = require('express');
 const http = require('https');
 const app = express();
@@ -19,7 +21,19 @@ app.use(function(req, res, next) {
 
 	next();
 });
-const bodyParser = require('body-parser');
+
+function runService(workerData) {
+	return new Promise((resolve, reject) => {
+		const worker = new Worker('./service.js', { workerData });
+		worker.on('message', resolve);
+		worker.on('error', reject);
+		worker.on('exit', (code) => {
+			if (code !== 0)
+				reject(new Error(`Worker stopped with exit code ${code}`));
+		});
+	});
+}
+
 app.use(bodyParser.json());
 
 for (const name of Object.keys(nets)) {
@@ -36,6 +50,7 @@ app.listen(port, () => {
 
 app.get('/status', async (req, res) => {
 	const child= exec("./get_cpu_usage.sh", function(err, stdout, stderr) {
+		console.log(stdout);
 		res.send({
 			status: true,
 			ip: ips[0],
@@ -44,18 +59,13 @@ app.get('/status', async (req, res) => {
 	});
 });
 
-function fib(n) {
-	if (n < 2)
-		return n;
-	return fib(n - 1) + fib(n - 2);
-}
 
 app.post('/assign-fib-sequence', async (req, res) => {
 	const { body: { number }} = req;
 	if (number) {
-		return new Promise((resolve,reject) => {
-			resolve(res.send({success: true, result: fib(number)}));
-		});
+		runService({
+			num: number
+		}).then(a => console.log(a));
 	}
 
 	return res.send({success: false});
@@ -70,4 +80,4 @@ axios.post(masterAddress + '/assign-node', {
   })
   .catch(function (error) {
     console.log(error);
-  });
+});
