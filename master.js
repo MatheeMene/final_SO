@@ -56,9 +56,11 @@ function checkNodesStatus() {
 	for (const [key, value] of Object.entries(nodesAvailable)) {
 
 		axios.get('http://' + key + ':3001/status').then(function (response) {
-			let load = parseInt(response.data.load.split('\n')[0]);
-			nodesAvailable[key].load = load;
+			let load = response.data.load;
+			console.log(response.data, ' load = ', key)
+			nodesAvailable[key].load = parseFloat(load);
 		}).catch(function (error) {
+			console.log(error)
 			delete nodesAvailable[key];
 			console.warn('Alert: node ' + key + ' dropped');
 		});

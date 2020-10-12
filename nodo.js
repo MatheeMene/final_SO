@@ -13,6 +13,12 @@ const { fork, spawn } = require('await-spawn');
 const axios = require('axios');
 var sys = require('sys')
 var exec = require('child_process').exec;
+var previousUsage = null;
+var thisContainerId = null;
+exec("head -1 /proc/self/cgroup|cut -d/ -f3", function(err, stdout, stderr) {
+	thisContainerId = stdout.split('/n')[0];
+	console.log(thisContainerId);
+});
 
 app.use(function(req, res, next) {
 	res.header('Access-Control-Allow-Credentials', true);
@@ -49,13 +55,27 @@ app.listen(port, () => {
 });
 
 app.get('/status', async (req, res) => {
-	const child= exec("./get_cpu_usage.sh", function(err, stdout, stderr) {
-		console.log(stdout);
-		res.send({
-			status: true,
-			ip: ips[0],
-			load: stdout
-		});
+	//const child = exec("./get_cpu_usage_milicores.sh", function(err, stdout, stderr) {
+		//var stdoutAsInt = parseInt(stdout.split('/n')[0]);
+		//if (!previousUsage) {
+		//	previousUsage = stdout;
+		//}
+	//	var usage = stdoutAsInt - previousUsage;
+
+	//	res.send({
+	//		status: true,
+	//		ip: ips[0],
+	//		load: usage,
+	//		milicores: usage 
+	//	});
+
+		//	});
+	let statusRes = await axios.get('http://localhost:3002/' + thisContainerId);
+	console.log(statusRes.data);
+	return res.send({
+		status: true,
+		up: ips[0],
+		load: statusRes.data.usage
 	});
 });
 
