@@ -47,6 +47,11 @@ app.post('/assign-node', (req, res) => {
 	}
 });
 
+app.put('/receive-status', (req, res) => {
+	let resultFromNode = req.body;
+	console.log('result from node ' + resultFromNode.ip + ": " + resultFromNode.number);
+});
+
 function checkNodesStatus() {
 	for (const [key, value] of Object.entries(nodesAvailable)) {
 
@@ -64,18 +69,35 @@ const rl = readline.createInterface({
 	output: process.stdout
 });
 
+function getLeastUsedNode() {
+	let lowerLoad = Number.MAX_VALUE;
+	let lowerLoadIndex = '';
+	for (const [key,value] of Object.entries(nodesAvailable)) {
+		if (value.load < lowerLoad) {
+			lowerLoad = value.load;
+			lowerLoadIndex = key;
+		}
+	}
+
+	return lowerLoadIndex;
+}
+
 function sendWorkToNode(num) {
-	axios.post('http://192.168.1.4:3001' + '/assign-fib-sequence', {
-		number: num
-	})
-		.then(function (response) {
-			if (response.data.success) {
-				console.log('Reult from node #1: ' + response.data.result);
-			}
-		})
-		.catch(function (error) {
-			console.log(error);
-		});
+	let leastUsedNode = getLeastUsedNode();
+	if (leastUsedNode && leastUsedNode.length > 0) {
+		let route = 'http://' + leastUsedNode + ':3001/assign-fib-sequence';
+		axios.post(route, {
+			number: num
+		}).then(function (response) {
+				if (response.data.success) {
+					console.log('Reult from node ' + leastUsedNode + ': running');
+				}
+			})
+			.catch(function (error) {
+				console.log(error);
+			});
+
+	}
 }
 
 function promptMenu() {
