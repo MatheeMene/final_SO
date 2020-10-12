@@ -80,10 +80,9 @@ function sendResultWebhook(data) {
 		ip: ips[0]
 	}).then(function (response) {
 		if (response.data.success) {
-			console.log('Reult from node #1: ', response.data);
+			console.log('Result from node #1: ', response.data);
 		}
-	})
-		.catch(function (error) {
+	}).catch(function (error) {
 			console.log(error);
 		});
 
