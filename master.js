@@ -47,6 +47,11 @@ app.post('/assign-node', (req, res) => {
 	}
 });
 
+app.put('/receive-status', (req, res) => {
+	let resultFromNode = req.body;
+	console.log('result from node ' + resultFromNode.ip + ": " + resultFromNode.number);
+});
+
 function checkNodesStatus() {
 	for (const [key, value] of Object.entries(nodesAvailable)) {
 
@@ -80,13 +85,12 @@ function getLeastUsedNode() {
 function sendWorkToNode(num) {
 	let leastUsedNode = getLeastUsedNode();
 	if (leastUsedNode && leastUsedNode.length > 0) {
-		let route = 'http://' + leastUsedNode + ':3000/assign-fib-sequence';
-		console.log(leastUsedNode);
+		let route = 'http://' + leastUsedNode + ':3001/assign-fib-sequence';
 		axios.post(route, {
 			number: num
 		}).then(function (response) {
 				if (response.data.success) {
-					console.log('Reult from node #1: ' + response.data.result);
+					console.log('Reult from node ' + leastUsedNode + ': running');
 				}
 			})
 			.catch(function (error) {

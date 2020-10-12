@@ -7,18 +7,18 @@ const app = express();
 const port = 3001;
 const nets = networkInterfaces();
 const ips = [];
-//const masterAddress = 'http://172.18.0.22:3000';
-const masterAddress = 'http://127.0.0.1:3000';
-const { fork,spawn } = require('await-spawn');
+const masterAddress = 'http://172.18.0.22:3000';
+//const masterAddress = 'http://127.0.0.1:3000';
+const { fork, spawn } = require('await-spawn');
 const axios = require('axios');
 var sys = require('sys')
 var exec = require('child_process').exec;
+
 app.use(function(req, res, next) {
 	res.header('Access-Control-Allow-Credentials', true);
 	res.header('Access-Control-Allow-Origin',  req.headers.origin);
 	res.header('Access-Control-Allow-Methods','OPTIONS,GET,PUT,POST,DELETE');
 	res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, X-XSRF-TOKEN');
-
 	next();
 });
 
@@ -65,19 +65,36 @@ app.post('/assign-fib-sequence', async (req, res) => {
 	if (number) {
 		runService({
 			num: number
-		}).then(a => console.log(a));
+		}).then(data => sendResultWebhook(data));
+		return res.send({status: "running", success: true});
 	}
 
 	return res.send({success: false});
 });
 
+function sendResultWebhook(data) {
+	let route = masterAddress + "/receive-status";
+	axios.put(route, {
+		number: data.result,
+		success:true,
+		ip: ips[0]
+	}).then(function (response) {
+		if (response.data.success) {
+			console.log('Reult from node #1: ', response.data);
+		}
+	})
+		.catch(function (error) {
+			console.log(error);
+		});
+
+}
 
 axios.post(masterAddress + '/assign-node', {
 	ip: ips[0]
-  })
-  .then(function (response) {
-    console.log(response.data);
-  })
-  .catch(function (error) {
-    console.log(error);
-});
+})
+	.then(function (response) {
+		console.log(response.data);
+	})
+	.catch(function (error) {
+		console.log(error);
+	});
