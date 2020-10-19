@@ -115,11 +115,6 @@ function promptMenu() {
 				sendWorkToNode(number);
 				promptMenu();
 			});
-		} else if (option == '2') {
-			rl.question("Set sequence number: \n", (numbers) => {
-
-			});
-
 		}
 	});
 }
