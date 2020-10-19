@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const http = require('https');
 const app = express();
-const port = 3001;
+const port = process.env.CLUSTER_CONTAINER_PORT;
 const nets = networkInterfaces();
 const ips = [];
 const masterAddress = 'http://172.18.0.22:3000';
@@ -13,6 +13,12 @@ const { fork, spawn } = require('await-spawn');
 const axios = require('axios');
 var sys = require('sys')
 var exec = require('child_process').exec;
+var previousUsage = null;
+var thisContainerId = null;
+exec("head -1 /proc/self/cgroup|cut -d/ -f3", function(err, stdout, stderr) {
+	thisContainerId = stdout.split('/n')[0];
+	console.log(thisContainerId);
+});
 
 app.use(function(req, res, next) {
 	res.header('Access-Control-Allow-Credentials', true);
@@ -49,13 +55,13 @@ app.listen(port, () => {
 });
 
 app.get('/status', async (req, res) => {
-	const child= exec("./get_cpu_usage.sh", function(err, stdout, stderr) {
-		console.log(stdout);
-		res.send({
-			status: true,
-			ip: ips[0],
-			load: stdout
-		});
+	let statusRes = await axios.get('http://localhost:3002/' + thisContainerId);
+	console.log(statusRes.data);
+	return res.send({
+		status: true,
+		up: ips[0],
+		port: port,
+		load: statusRes.data.usage
 	});
 });
 
@@ -80,17 +86,17 @@ function sendResultWebhook(data) {
 		ip: ips[0]
 	}).then(function (response) {
 		if (response.data.success) {
-			console.log('Reult from node #1: ', response.data);
+			console.log('Result from node #1: ', response.data);
 		}
-	})
-		.catch(function (error) {
+	}).catch(function (error) {
 			console.log(error);
 		});
 
 }
 
 axios.post(masterAddress + '/assign-node', {
-	ip: ips[0]
+	ip: ips[0],
+	port: port
 })
 	.then(function (response) {
 		console.log(response.data);

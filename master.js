@@ -26,12 +26,15 @@ app.listen(port, () => {
 
 app.post('/assign-node', (req, res) => {
 	const { body: { ip }} = req;
+	const port = req.body.port;
 
+	const addr = ip + ':' + port;
 	if (ip && ip.length > 0) {
-		if (!nodesAvailable[ip]) {
-			nodesAvailable[ip] = {
+		if (!nodesAvailable[addr]) {
+			nodesAvailable[addr] = {
 				status: true,
-				load: 0
+				load: 0,
+				port: port
 			}
 		}
 
@@ -55,11 +58,14 @@ app.put('/receive-status', (req, res) => {
 function checkNodesStatus() {
 	for (const [key, value] of Object.entries(nodesAvailable)) {
 
-		axios.get('http://' + key + ':3001/status').then(function (response) {
-			//console.log(response.data);
+		axios.get('http://' + key + '/status').then(function (response) {
+			let load = response.data.load;
+			console.log(response.data)
+			nodesAvailable[key].load = parseFloat(load);
 		}).catch(function (error) {
+			console.log(error)
 			delete nodesAvailable[key];
-			console.warn('Alert: node' + key + ' dropped');
+			console.warn('Alert: node ' + key + ' dropped');
 		});
 	}
 }
@@ -72,10 +78,12 @@ const rl = readline.createInterface({
 function getLeastUsedNode() {
 	let lowerLoad = Number.MAX_VALUE;
 	let lowerLoadIndex = '';
+	let lowerLoadPort = '';
 	for (const [key,value] of Object.entries(nodesAvailable)) {
 		if (value.load < lowerLoad) {
 			lowerLoad = value.load;
 			lowerLoadIndex = key;
+			lowerLoadPort = value.port;
 		}
 	}
 
@@ -85,12 +93,12 @@ function getLeastUsedNode() {
 function sendWorkToNode(num) {
 	let leastUsedNode = getLeastUsedNode();
 	if (leastUsedNode && leastUsedNode.length > 0) {
-		let route = 'http://' + leastUsedNode + ':3001/assign-fib-sequence';
+		let route = 'http://' + leastUsedNode + '/assign-fib-sequence';
 		axios.post(route, {
 			number: num
 		}).then(function (response) {
 				if (response.data.success) {
-					console.log('Reult from node ' + leastUsedNode + ': running');
+					console.log('Result from node ' + leastUsedNode + ': running');
 				}
 			})
 			.catch(function (error) {
@@ -107,11 +115,6 @@ function promptMenu() {
 				sendWorkToNode(number);
 				promptMenu();
 			});
-		} else if (option == '2') {
-			rl.question("Set sequence number: \n", (numbers) => {
-
-			});
-
 		}
 	});
 }

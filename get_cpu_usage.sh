@@ -1,1 +1,1 @@
-top -b -d1 -n1|grep -i "Cpu(s)"|head -c21|cut -d ' ' -f2|cut -d '%' -f1 
+grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'
