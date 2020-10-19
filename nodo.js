@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const http = require('https');
 const app = express();
-const port = 3001;
+const port = process.env.CLUSTER_CONTAINER_PORT;
 const nets = networkInterfaces();
 const ips = [];
 const masterAddress = 'http://172.18.0.22:3000';
@@ -55,26 +55,12 @@ app.listen(port, () => {
 });
 
 app.get('/status', async (req, res) => {
-	//const child = exec("./get_cpu_usage_milicores.sh", function(err, stdout, stderr) {
-		//var stdoutAsInt = parseInt(stdout.split('/n')[0]);
-		//if (!previousUsage) {
-		//	previousUsage = stdout;
-		//}
-	//	var usage = stdoutAsInt - previousUsage;
-
-	//	res.send({
-	//		status: true,
-	//		ip: ips[0],
-	//		load: usage,
-	//		milicores: usage 
-	//	});
-
-		//	});
 	let statusRes = await axios.get('http://localhost:3002/' + thisContainerId);
 	console.log(statusRes.data);
 	return res.send({
 		status: true,
 		up: ips[0],
+		port: port,
 		load: statusRes.data.usage
 	});
 });
@@ -109,7 +95,8 @@ function sendResultWebhook(data) {
 }
 
 axios.post(masterAddress + '/assign-node', {
-	ip: ips[0]
+	ip: ips[0],
+	port: port
 })
 	.then(function (response) {
 		console.log(response.data);
