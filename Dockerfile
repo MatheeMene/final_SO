@@ -12,5 +12,5 @@ RUN npm i
 COPY . .
 
 EXPOSE 3000
-CMD [ "node", "nodo.js" ]
+CMD [ "node", "master.js" ]
 

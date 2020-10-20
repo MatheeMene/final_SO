@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-	console.log(`App is running on http://localhost:${port}, my king.`);
+	console.log(`App is running on http://localhost:${port}.`);
 });
 
 app.post('/assign-node', (req, res) => {
@@ -52,7 +52,7 @@ app.post('/assign-node', (req, res) => {
 
 app.put('/receive-status', (req, res) => {
 	let resultFromNode = req.body;
-	console.log('result from node ' + resultFromNode.ip + ": " + resultFromNode.number);
+	console.log('result from node ' + resultFromNode.ip + ":" + resultFromNode.port + ": " + resultFromNode.number);
 });
 
 function checkNodesStatus() {
