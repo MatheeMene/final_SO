@@ -27,6 +27,13 @@ Então, enquanto em um terminal roda e exibe os feedbacks do container Master, e
 
 ### Passo a passo
 
+Instalar as dependências necessárias
+
+
+```bash
+npm install
+```
+
 Buildar containers 'nodo.js' e 'master.js':
 
 ```bash
