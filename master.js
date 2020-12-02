@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-	console.log(`App is running on http://localhost:${port}, my king.`);
+	console.log(`App is running on http://localhost:${port}.`);
 });
 
 app.post('/assign-node', (req, res) => {
@@ -63,7 +63,6 @@ function checkNodesStatus() {
 			console.log(response.data)
 			nodesAvailable[key].load = parseFloat(load);
 		}).catch(function (error) {
-			console.log(error)
 			delete nodesAvailable[key];
 			console.warn('Alert: node ' + key + ' dropped');
 		});
@@ -109,7 +108,7 @@ function sendWorkToNode(num) {
 }
 
 function promptMenu() {
-	rl.question("Choose operation: \n1 - Set Fibonacci sequence to calculate\n2 - Get cluster status\n", (option) => {
+	rl.question("Choose operation: \n1 - Set Fibonacci sequence to calculate\n", (option) => {
 		if (option == '1') {
 			rl.question("Set sequence number: \n", (number) => {
 				sendWorkToNode(number);

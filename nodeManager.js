@@ -12,7 +12,6 @@ function main() {
 }
 
 function spawnNode() {
-	console.log("dqwdqwdqw");
 	const child = exec("./spawn_node.sh " + lastNodePort, function(err, stdout, stderr) {
 		 console.log(stdout, "stdout");
 	});

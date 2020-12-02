@@ -16,7 +16,7 @@ app.use(function(req, res, next) {
 });
 
 app.listen(port, () => {
-	console.log(`App is running on http://localhost:${port}, my king.`);
+	console.log(`App is running on http://localhost:${port}.`);
 });
 
 app.get('/:id', function(req,res) {
