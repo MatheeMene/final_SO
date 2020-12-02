@@ -1,6 +1,6 @@
 # Implementação de um Load Balancer 
 
-### Libs utiliazadas
+### Libs utilizadas
 #
   | Lib | Install |
   | ------ | ------ |
