@@ -1,4 +1,4 @@
-# Implementação de um balancer para clusters
+# Implementação de um Load Balancer 
 
 ### Libs utiliazadas
 #
